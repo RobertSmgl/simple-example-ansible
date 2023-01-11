@@ -1,0 +1,23 @@
+---
+
+
+- name: create user
+  ansible.builtin.user:
+    name: '{{ prepare_server_create_user }}'
+    state: present
+    create_home: no
+
+- name: create_user dir
+  ansible.builtin.file:
+    path: '/home/{{ prepare_server_create_user }}'
+    owner: '{{ prepare_server_create_user }}'
+    group: '{{ prepare_server_create_user }}'
+    state: directory
+
+
+- name: create service dir
+  ansible.builtin.file:
+    path: '/home/{{ prepare_server_create_user }}/{{ prepare_server_service_dir }}' 
+    owner: '{{ prepare_server_create_user }}'
+    group: '{{ prepare_server_create_user }}'
+    state: directory

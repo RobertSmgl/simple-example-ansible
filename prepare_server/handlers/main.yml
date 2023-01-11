@@ -1,0 +1,12 @@
+---
+# handlers file for prepare_server
+
+
+- name: docker_install_group
+  include_tasks: docker_inst.yml
+
+- name: create_user
+  include_tasks: create_user.yml
+
+- name: db_dumb_init
+  include_tasks: db_create.yml

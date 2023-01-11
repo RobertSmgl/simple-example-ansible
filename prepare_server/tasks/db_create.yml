@@ -1,0 +1,30 @@
+---
+
+- name: copy file to db_dumb directory
+  ansible.builtin.copy:
+    src: back.sql
+    dest: '/home/{{ prepare_server_service_dir }}/dbase_dir'
+    owner: '{{ prepare_server_service_dir }}'
+    group: '{{ prepare_server_service_dir }}'
+
+- name: create directories for database
+  ansible.builtin.file:
+    state: directory
+    path: '/home/{{ prepare_server_service_dir }}/dbase_dir'
+
+- name: copy db_create files to server
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: '{{ prepare_server_service_dir }}'
+    group: '{{ prepare_server_service_dir }}'
+  with_items:
+    - '{{ prepare_server_folders }}'
+
+- name: create container to create initial dbase
+  ansible.builtin.shell:
+    cmd: 'docker container run --name postgres_initial_cont -d -e POSTGRES_PASSWORD={{ prepare_server_db_pass }} -e POSTGRES_DB={{ prepare_server_db_name }} -v /home/{{ prepare_server_service_dir }}/db_dumb:/etc/db_dumb/ -v /home/{{ prepare_server_service_dir }}/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -v /home/{{ prepare_server_service_dir }}/dbase_dir:/var/lib/postgresql/data postgres:14'
+
+- name: stop and remove created container
+  ansible.builtin.shell:
+    cmd: 'sleep 30 && docker container rm -f postgres_initial_cont'

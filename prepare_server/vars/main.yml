@@ -1,0 +1,25 @@
+---
+# vars file for prepare_server
+
+
+prepare_server_docker_package_list:
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - git
+
+prepare_server_folders:
+  - { src: docker-entrypoint-initdb.d, dest: /home/example_user/ }
+
+git_runner_key: "some_ssh"
+
+prepare_server_create_user: "example_user"
+
+prepare_server_service_dir: "example_user"
+
+prepare_server_db_pass: "example"
+
+prepare_server_db_user: "example"
+
+prepare_server_db_name: "example"

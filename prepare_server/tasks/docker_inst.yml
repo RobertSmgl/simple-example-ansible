@@ -1,0 +1,38 @@
+---
+
+- name: curl gpg key
+  ansible.builtin.shell:
+    cmd: 'curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg'
+
+- name: set up repo
+  ansible.builtin.shell:
+    cmd: 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
+  
+
+- name: update apt
+  ansible.builtin.apt:
+    update_cache: yes
+  
+
+- name: install docker
+  ansible.builtin.apt:
+    name: '{{ item }}'
+    state: present
+  with_items:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+    - docker-compose-plugin
+  
+- name: add name servers to fast resolve apt install for docker
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    mode: 644
+
+- name: start docker
+  ansible.builtin.systemd:
+    name: docker.service
+    state: restarted
+    enabled: true
+  

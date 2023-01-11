@@ -1,0 +1,59 @@
+---
+# tasks file for prepare_server
+
+- name: apt update  
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: add gitlab runner key to server
+  ansible.builtin.lineinfile:
+    line: '{{ prepare_server_git_runner_key }}'
+    path: ~/.ssh/authorized_keys
+    state: present
+
+- name: install package dependency
+  ansible.builtin.apt:
+    name: '{{ item }}'
+    state: present 
+  with_items:
+    - '{{ prepare_server_docker_package_list }}'
+
+- name: mkdir for GPG key and run handlers if created
+  ansible.builtin.file:
+    state: directory
+    path: /etc/apt/keyrings
+    owner: root
+    group: root
+  notify: 
+    - docker_install_group
+
+- name: Flush handlers to run docker_install group
+  meta: flush_handlers
+
+- name: create user
+  ansible.builtin.user:
+    name: '{{ prepare_server_create_user }}'
+    state: present
+    create_home: no
+
+- name: mkdir project dir
+  ansible.builtin.file:
+    path: '/home/{{ prepare_server_create_user }}/{{ prepare_server_service_dir }}' 
+    owner: '{{ prepare_server_create_user }}'
+    group: '{{ prepare_server_create_user }}'
+    state: directory
+  notify: create_user  # rudiment
+
+- name: Flush handlers to run create user
+  meta: flush_handlers
+
+- name: create directory for database_dumb
+  ansible.builtin.file:
+    state: directory
+    path: '/home/{{ prepare_server_create_user }}/db_dumb'
+  notify: 
+    - db_dumb_init
+  when: install_database_dumb == "yes"
+
+- name: Flush handlers to run create dbase
+  meta: flush_handlers
